@@ -32,7 +32,7 @@ interface FightView {
 interface NamedGroup { name: string; ids: number[]; variants: string[]; seen: boolean }
 
 declare const api: {
-  getState(): Promise<{ settings: { rules: Rule[]; volume: number; apiUrl: string }, storage: { file: string; problem: string | null }, catalog: { gameVersion: string | null; builtAt: string }, fight: FightView, sounds: string[] }>;
+  getState(): Promise<{ settings: { rules: Rule[]; volume: number; apiUrl: string; closeToTray: boolean }, storage: { file: string; problem: string | null }, catalog: { gameVersion: string | null; builtAt: string }, fight: FightView, sounds: string[] }>;
   saveSettings(patch: Record<string, unknown>): Promise<{ rules: Rule[]; volume: number }>;
   searchNames(kind: EffectKind, query: string): Promise<NamedGroup[]>;
   nameOf(kind: EffectKind, id: number): Promise<string | null>;
@@ -635,6 +635,9 @@ $("newrule").addEventListener("click", () =>
 const volume = $("volume") as HTMLInputElement;
 volume.addEventListener("change", () => void api.saveSettings({ volume: Number(volume.value) }));
 
+const closeToTray = $("closetotray") as HTMLInputElement;
+closeToTray.addEventListener("change", () => void api.saveSettings({ closeToTray: closeToTray.checked }));
+
 api.onFightUpdate((v) => { fight = v; renderFight(); });
 api.onAlertSound(({ file, volume: vol }) => void play(file, vol));
 api.onAlertLog(({ at, title }) => {
@@ -651,6 +654,7 @@ void (async () => {
   sounds = state.sounds;
   fight = state.fight;
   volume.value = String(state.settings.volume);
+  closeToTray.checked = state.settings.closeToTray;
   renderFight();
   await warmNames(rules);
   renderRules();

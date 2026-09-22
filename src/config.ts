@@ -23,6 +23,9 @@ export interface Settings {
   maxEventAgeMs: number;
   overlayMs: number;
   volume: number;
+  /** What the window's close button does: hide to the tray (the default, the
+   *  app has to keep listening to be any use) or quit outright. */
+  closeToTray: boolean;
   rules: Rule[];
   /** "state:56", "effect:186" - every id this account has actually seen in a
    *  fight. Six different states are named "Invulnerable"; this is what tells
@@ -41,6 +44,7 @@ export const DEFAULTS: Settings = {
   maxEventAgeMs: 10_000,
   overlayMs: 4000,
   volume: 1,
+  closeToTray: true,
   rules: [],
   seen: [],
   ownCharacters: [],

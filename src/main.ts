@@ -206,6 +206,13 @@ function createWindows(): void {
   void win.loadFile(path.join(ROOT, "renderer", "index.html"));
   win.on("close", (e) => {
     if (quitting) return;
+    // Quitting on close is a real quit: window-all-closed deliberately does
+    // nothing, so just letting the window go would leave a headless process.
+    if (!store.settings.closeToTray) {
+      quitting = true;
+      app.quit();
+      return;
+    }
     e.preventDefault(); // closing hides it; the tray brings it back
     win?.hide();
   });

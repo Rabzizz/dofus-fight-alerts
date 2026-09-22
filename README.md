@@ -26,6 +26,9 @@ Closing the window hides it to the tray; quit from the tray menu. The window may
 whole time you play: the stream and the rule engine run in the main process, so nothing is
 throttled when the window is not visible.
 
+Untick **Fermer réduit dans la zone de notification** (Règles tab) and the close button quits the
+app instead — nothing is watched after that, which is why hiding is the default.
+
 ## Writing a rule
 
 Rules are written against the **name family**, not against an id. That matters: the game data contains
