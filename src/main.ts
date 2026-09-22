@@ -138,6 +138,11 @@ function onMessage(m: Parameters<Parameters<typeof follow>[1]["onMessage"]>[0]):
     }
   }
 
+  if (tracker.moved) {
+    tracker.moved = false;
+    send("fight:update", rosterPayload());
+  }
+
   for (const ev of events) {
     if (ev.id !== null && !seen.has(`${ev.kind}:${ev.id}`)) {
       seen.add(`${ev.kind}:${ev.id}`);
@@ -360,7 +365,7 @@ async function smoke(out: string): Promise<void> {
         effects: [{ uid: 1, kind: "state", id: 5195, name: "Toxines II" }] },
       { id: 1000000002, side: "ally", facing: 7, cell: 201, monsterId: null, monsterName: null,
         level: null, playerName: "Coequipier", own: false, summon: false, effects: [] },
-      { id: -1, side: "enemy", facing: 3, cell: 100, monsterId: 4460, monsterName: "Capitaine Meno",
+      { id: -1, side: "enemy", facing: 3, cell: 100, position: 142, monsterId: 4460, monsterName: "Capitaine Meno",
         level: 209, playerName: null, own: false, summon: false,
         effects: [{ uid: 2, kind: "state", id: 5196, name: "Toxines III" }] },
       { id: -21, side: "unknown", facing: null, cell: null, monsterId: null, monsterName: null,

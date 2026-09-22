@@ -197,6 +197,10 @@ dofusdude's `meta/version`. Monster names are not in the catalog: the sniffer al
   id nobody announced. It shows as `Invocation -21` and its side is left **unknown**, never guessed
   from the sign of its id — your own summons are negative too. So an "enemy" rule will not fire on a
   summon, in either direction.
+- **A position only updates when the fighter walks.** `actor_movement` is the only movement the
+  sniffer names; a push, a pull or a teleport arrives inside `game_action_fight_event`, which it
+  does not decode. So a fighter that was pushed keeps the cell it walked to until it walks again.
+  Before anyone has moved the Combat tab shows the placement cell.
 - **233 of the 872 effects have no name at all.** Their description in the game files is a bare
   `#1` placeholder, so there is genuinely nothing to show. They appear as `effect 792`.
 - **Joining a fight already in progress** means the app never saw those effects applied, so when one

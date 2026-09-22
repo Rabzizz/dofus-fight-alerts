@@ -119,6 +119,30 @@ test("a removal we never saw applied is reported, not invented", () => {
   assert.equal(firing([anything], ev, t, new Cooldowns(), 0).length, 1);
 });
 
+test("a fighter that walks reports its new cell, and keeps its side", () => {
+  const t = opened();
+  t.handle(msg("actor_movement", { actor_id: MOB, path: [100, 114, 128, 142] }));
+  assert.equal(t.fighters.get(-1)?.position, 142, "the path's last cell is where it stopped");
+  assert.equal(t.fighters.get(-1)?.cell, 100, "the start cell is kept: sides are derived from it");
+  assert.equal(t.fighters.get(-1)?.side, "enemy", "walking off the start cell does not change sides");
+  assert.equal(t.moved, true);
+});
+
+test("a movement path sent as packed bytes is read the same way", () => {
+  const t = opened();
+  // Under cell 128 every byte is printable, and the API hands the path over as
+  // that string instead of a list.
+  t.handle(msg("actor_movement", { actor_id: MOB, path: "dn" }));
+  assert.equal(t.fighters.get(-1)?.position, 110);
+});
+
+test("movement outside the fight never invents a fighter", () => {
+  const t = opened();
+  t.handle(msg("actor_movement", { actor_id: 7777777, path: [10, 24] }));
+  assert.equal(t.fighters.size, 3);
+  assert.equal(t.moved, false);
+});
+
 test("fight_end clears the fight", () => {
   const t = opened();
   t.handle(applied(MOB, 950, { state_id: 7, effect_uid: 14 }));

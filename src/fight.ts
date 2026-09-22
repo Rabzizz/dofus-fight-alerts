@@ -23,7 +23,11 @@ export interface Fighter {
    *  between them got 3. Those are the four diagonal facings. Sides come from
    *  fight_placement_cells instead. */
   facing: number | null;
+  /** The START cell. Sides are derived from it, so it is never overwritten
+   *  when the fighter walks - `position` is where it is now. */
   cell: number | null;
+  /** Where it stands right now, from actor_movement. null until it moves. */
+  position: number | null;
   monsterId: number | null;
   level: number | null;
   grade: number | null;
@@ -72,8 +76,20 @@ const STATE_REMOVED = 951;
 const STATE_DISABLED = 952;
 
 function blank(id: number, summon = false): Fighter {
-  return { id, side: "unknown", facing: null, cell: null, monsterId: null,
+  return { id, side: "unknown", facing: null, cell: null, position: null, monsterId: null,
            level: null, grade: null, playerName: null, own: false, summon };
+}
+
+/** The cell a movement path ends on.
+ *
+ *  The API projects the packed path either as a list of cells or, when every
+ *  byte of it happens to be printable (a path that stays under cell 128), as
+ *  the string of those bytes. Both mean the same thing. Dofus 3 sends plain
+ *  cells here - no direction packed into the high bits, unlike Dofus 2. */
+function destination(path: unknown): number | null {
+  if (typeof path === "string") return path.length ? path.charCodeAt(path.length - 1) : null;
+  const cells = list(path);
+  return int(cells[cells.length - 1]);
 }
 
 export class FightTracker {
@@ -102,6 +118,9 @@ export class FightTracker {
   private defenderCells = new Set<number>();
   /** Removals for effects applied before we connected. Surfaced, not hidden. */
   unpairedRemovals = 0;
+  /** Set when someone changed cell, so the window can be refreshed: a move
+   *  produces no FightEvent and would otherwise not reach the UI. */
+  moved = false;
 
   get inFight(): boolean {
     return this.fightId !== null;
@@ -290,6 +309,24 @@ export class FightTracker {
         if (id !== null && id > 0 && m.dir === "c2s") {
           this.ours.add(id);
           this.resolveSides();
+        }
+        return [];
+      }
+
+      case "actor_movement": {
+        // Only ever for a fighter we already know: out of combat this message
+        // fires constantly for everyone on the map, and the roster is the
+        // fight, not the map.
+        // ponytail: walking only. A push or a teleport arrives inside
+        // game_action_fight_event, which the sniffer does not decode, so a
+        // pushed fighter keeps its old cell until it next walks. Read that
+        // message if the position has to be exact.
+        const id = signedId(f.actor_id);
+        const fighter = id === null ? undefined : this.fighters.get(id);
+        const to = destination(f.path);
+        if (fighter && to !== null && fighter.position !== to) {
+          fighter.position = to;
+          this.moved = true;
         }
         return [];
       }

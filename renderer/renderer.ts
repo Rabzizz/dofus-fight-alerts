@@ -21,7 +21,7 @@ interface Rule {
 }
 interface LiveEffect { uid: number; kind: EffectKind; id: number | null; name: string | null }
 interface FighterView {
-  id: number; side: Side; facing: number | null; cell: number | null;
+  id: number; side: Side; facing: number | null; cell: number | null; position: number | null;
   monsterId: number | null; monsterName: string | null; level: number | null;
   playerName: string | null; own: boolean; summon: boolean; effects: LiveEffect[];
 }
@@ -105,7 +105,9 @@ function fighterCard(f: FighterView): HTMLElement {
   head.appendChild(el("span", "name", fighterName(f)));
   const bits: string[] = [];
   if (f.level !== null) bits.push(`niv. ${f.level}`);
-  if (f.cell !== null) bits.push(`case ${f.cell}`);
+  // Where it is now, falling back to the start cell before anyone has moved.
+  const at = f.position ?? f.cell;
+  if (at !== null) bits.push(`case ${at}`);
   head.appendChild(el("span", "muted", bits.join(" · ")));
 
   // Nothing in the protocol says which character is logged in here, so you say
