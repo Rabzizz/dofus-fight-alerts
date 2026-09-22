@@ -1,6 +1,6 @@
 {
   "name": "dofus-fight-alerts",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "description": "Alarms on Dofus 3 fight events, driven by a local sniffer API",
   "type": "module",
