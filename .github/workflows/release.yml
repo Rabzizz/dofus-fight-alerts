@@ -1,0 +1,79 @@
+name: Release
+
+# Tag a commit and the installer appears on the Releases page:
+#
+#     npm version minor          # bumps package.json and creates vX.Y.Z
+#     git push --follow-tags
+#
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and release, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: write        # needed to create the release
+
+defaults:
+  run:
+    shell: bash          # git bash is on the windows runners; pwsh quoting is not worth it
+
+jobs:
+  release:
+    # Must be Windows: it builds a Windows installer, and electron-builder does
+    # not cross-compile NSIS targets reliably.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0        # the changelog needs the full history and all tags
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Never ship a build that does not pass. This also compiles everything.
+      - run: npm test
+
+      - name: Take the version from the tag
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          # The tag is the single source of truth; keep package.json in step so
+          # the artifact names and the release agree.
+          npm version "${TAG#v}" --no-git-tag-version --allow-same-version
+
+      - name: Build the installer and the portable exe
+        run: npx electron-builder --win --publish never
+
+      - name: Write the release notes
+        run: node tools/changelog.mjs "$TAG" > notes.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file notes.md \
+            release/*-setup.exe release/*-portable.exe release/latest.yml
+
+      # Only a fallback: when the release itself published, the exes are already
+      # on the Releases page and a second copy just burns the storage quota.
+      - name: Keep the build if publishing failed
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-build
+          path: |
+            release/*.exe
+            release/latest.yml
+          if-no-files-found: warn

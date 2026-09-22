@@ -1,0 +1,8 @@
+node_modules/
+dist/
+# The catalog is committed (it is small and the app needs it offline), but the
+# multi-megabyte downloads it is built from are not.
+tools/.cache/
+*.log
+release/
+build/icon.ico

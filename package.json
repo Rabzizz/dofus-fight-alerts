@@ -1,0 +1,75 @@
+{
+  "name": "dofus-fight-alerts",
+  "version": "0.1.2",
+  "private": true,
+  "description": "Alarms on Dofus 3 fight events, driven by a local sniffer API",
+  "type": "module",
+  "main": "dist/src/main.js",
+  "scripts": {
+    "catalog": "node tools/build-catalog.mjs",
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
+    "sounds": "node tools/build-sounds.mjs",
+    "icon": "node tools/build-icon.mjs",
+    "dist": "npm run build && electron-builder --win --publish never",
+    "changelog": "node tools/changelog.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "electron": "^44.0.0",
+    "typescript": "^5.9.0",
+    "electron-builder": "^25.1.8"
+  },
+  "author": "Rabzizz",
+  "build": {
+    "appId": "ch.abyss-inn.dofus-fight-alerts",
+    "productName": "Dofus Fight Alerts",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/src/**",
+      "dist/renderer/**",
+      "renderer/*.html",
+      "src/preload.cjs",
+      "data/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "shortcutName": "Dofus Fight Alerts",
+      "artifactName": "${name}-${version}-setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "${name}-${version}-portable.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Rabzizz",
+        "repo": "dofus-fight-alerts"
+      }
+    ]
+  }
+}
