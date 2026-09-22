@@ -241,9 +241,22 @@ function createWindows(): void {
 
   tray = new Tray(ICON);
   tray.setToolTip("Dofus fight alerts");
+  // The tray menu is the only menu this app has, so "about" lives there.
+  // The version is app.getVersion(), which is package.json's - and CI rewrites
+  // that from the git tag, so what is shown here is the release you installed.
+  app.setAboutPanelOptions({
+    applicationName: "Dofus Fight Alerts",
+    applicationVersion: app.getVersion(),
+    version: `Electron ${process.versions.electron} · contrat API 1`,
+    copyright:
+      "Outil personnel, non officiel, sans lien avec Ankama. "
+      + "Mises à jour : github.com/Rabzizz/dofus-fight-alerts/releases",
+  });
+
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: "Ouvrir", click: () => win?.show() },
+      { label: "À propos", click: () => app.showAboutPanel() },
       { type: "separator" },
       { label: "Quitter", click: () => { quitting = true; app.quit(); } },
     ]),

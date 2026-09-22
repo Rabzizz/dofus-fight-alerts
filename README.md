@@ -22,7 +22,8 @@ npm install
 npm start
 ```
 
-Closing the window hides it to the tray; quit from the tray menu. The window may stay hidden the
+Closing the window hides it to the tray; quit from the tray menu, where **À propos** also shows
+which version you are running. The window may stay hidden the
 whole time you play: the stream and the rule engine run in the main process, so nothing is
 throttled when the window is not visible.
 
@@ -229,6 +230,11 @@ electron-builder, generates the notes and publishes the release with
 - `dofus-fight-alerts-X.Y.Z-setup.exe` — the installer (choosable install directory, no admin)
 - `dofus-fight-alerts-X.Y.Z-portable.exe` — runs without installing
 - `latest.yml` — the manifest electron-updater would need, if auto-update is ever wanted
+
+**The app does not update itself.** Nothing in it reads `latest.yml`; installing a new version means
+downloading the setup from the Releases page and running it over the old one (it keeps your
+`settings.json`, which lives in `%APPDATA%`). Check the version you have from the tray's
+**À propos**.
 
 The notes come from `tools/changelog.mjs`, which groups the commits since the previous tag by
 conventional-commit prefix (`feat:`, `fix:`, …) and puts anything unprefixed under *Autres*, so no
