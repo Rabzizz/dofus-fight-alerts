@@ -4,7 +4,7 @@
  *
  * GitHub's own --generate-notes groups by pull request, and this repo is worked
  * on by committing straight to the branch, so it would just print a flat list.
- * This groups by conventional-commit prefix instead, and falls back to "Autres"
+ * This groups by conventional-commit prefix instead, and falls back to "Other"
  * for anything that does not use one - so unprefixed commits are never dropped.
  */
 
@@ -29,15 +29,15 @@ const range = previous ? `${previous}..${tag}` : tag;
 const lines = git("log", range, "--no-merges", "--pretty=format:%s\x1f%h").split("\n").filter(Boolean);
 
 const GROUPS = [
-  ["feat", "Nouveautés"],
-  ["fix", "Corrections"],
+  ["feat", "Features"],
+  ["fix", "Fixes"],
   ["perf", "Performance"],
-  ["refactor", "Refactorisation"],
+  ["refactor", "Refactoring"],
   ["docs", "Documentation"],
   ["test", "Tests"],
-  ["build", "Build et outillage"],
-  ["ci", "Build et outillage"],
-  ["chore", "Build et outillage"],
+  ["build", "Build and tooling"],
+  ["ci", "Build and tooling"],
+  ["chore", "Build and tooling"],
 ];
 
 const buckets = new Map();
@@ -46,32 +46,32 @@ for (const line of lines) {
   // "feat(rules): do a thing" -> prefix "feat", rest "do a thing"
   const m = /^(\w+)(\([^)]*\))?!?:\s*(.+)$/.exec(subject ?? "");
   const found = m && GROUPS.find(([key]) => key === m[1].toLowerCase());
-  const title = found ? found[1] : "Autres";
+  const title = found ? found[1] : "Other";
   const scope = m?.[2] ? `**${m[2].slice(1, -1)}** ` : "";
   const text = found ? `${scope}${m[3]}` : subject;
   if (!buckets.has(title)) buckets.set(title, []);
   buckets.get(title).push(`- ${text} (${hash})`);
 }
 
-const order = [...new Set(GROUPS.map(([, t]) => t)), "Autres"];
+const order = [...new Set(GROUPS.map(([, t]) => t)), "Other"];
 const out = [];
 for (const title of order) {
   if (!buckets.has(title)) continue;
   out.push(`### ${title}`, "", ...buckets.get(title), "");
 }
-if (!out.length) out.push("_Pas de changement enregistré._", "");
+if (!out.length) out.push("_No recorded change._", "");
 
 out.push(
   "---",
   "",
-  "**Installation** — `-setup.exe` installe l'application ; `-portable.exe` se lance sans rien installer.",
+  "**Install** — `-setup.exe` installs the app; `-portable.exe` runs without installing anything.",
   "",
-  "Windows SmartScreen affichera un avertissement : les binaires ne sont pas signés.",
-  "Nécessite un sniffer Dofus 3 en écoute sur 127.0.0.1:8765 (projet séparé, non public).",
+  "Windows SmartScreen will warn on first run: the binaries are not signed.",
+  "Needs a Dofus 3 sniffer listening on 127.0.0.1:8765 (separate, non-public project).",
   "",
   previous
-    ? `Changements depuis [${previous}](../../compare/${previous}...${tag}) · ${lines.length} commit(s).`
-    : `Première version · ${lines.length} commit(s).`,
+    ? `Changes since [${previous}](../../compare/${previous}...${tag}) · ${lines.length} commit(s).`
+    : `First release · ${lines.length} commit(s).`,
 );
 
 process.stdout.write(out.join("\n") + "\n");

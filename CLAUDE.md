@@ -81,4 +81,8 @@ sniffer SSE ─► stream.ts ─► fight.ts (FightTracker) ─► rules.ts (fir
   back in 0–1 ms). That is a different thing from `cooldownMs`, which de-duplicates one cast.
 - `data/catalog.json` is committed (180 KB) so the editor works offline. Built from DofusDB, whose
   LPNC-IA licence restricts AI use — a deliberate call for a private tool, see `tools/build-catalog.mjs`.
-- UI strings, rule labels and comments are French; code identifiers are English.
+- **English everywhere except the app's own interface.** Commit messages, release notes, code
+  comments, identifiers and docs are English. Only the strings the user reads in the window
+  (`renderer/index.html`, the labels built in `renderer/renderer.ts`, the toast titles in
+  `src/main.ts`) are French — it is a French Dofus tool. The one French commit in the history
+  and the French headings `tools/changelog.mjs` used to print are not the convention.
