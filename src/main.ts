@@ -11,6 +11,9 @@
  */
 
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, Notification, screen, Tray } from "electron";
+// Default import, then destructure: electron-updater is CommonJS and its named
+// exports are lazy getters, which Node's ESM/CJS bridge does not expose.
+import electronUpdater from "electron-updater";
 import { copyFile, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -348,6 +351,27 @@ ipcMain.handle("rule:test", (_e, ruleId: string) => {
   return true;
 });
 
+/** Download a new release in the background and install it on quit.
+ *
+ *  Nothing to click: electron-updater reads the latest.yml the release workflow
+ *  publishes next to the installer, and the repository is public so no token is
+ *  involved. It is skipped in two cases where it cannot work rather than left
+ *  to fail noisily:
+ *    - unpackaged (npm start), where there is no app-update.yml to read;
+ *    - the portable exe, which has nothing to install over - electron-builder
+ *      marks it with PORTABLE_EXECUTABLE_DIR.
+ */
+function startAutoUpdate(): void {
+  if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_DIR) return;
+  const { autoUpdater } = electronUpdater;
+  // An 'error' with no listener is an unhandled exception, and a failed update
+  // check must never take the app down mid-fight. Offline is the normal case.
+  autoUpdater.on("error", (err) => console.error("update:", err.message));
+  autoUpdater.on("update-downloaded", (info) =>
+    console.log(`update: ${info.version} ready, installs on quit`));
+  void autoUpdater.checkForUpdatesAndNotify();
+}
+
 void app.whenReady().then(async () => {
   await store.load();
   console.log(`${store.settings.rules.length} rule(s) loaded from ${store.file}`);
@@ -359,6 +383,7 @@ void app.whenReady().then(async () => {
   await names.loadCatalog(path.join(ROOT, "data", "catalog.json"));
   createWindows();
   startStream();
+  startAutoUpdate();
 
   // `npm run smoke` drives the UI end to end, writes screenshots and exits.
   // It is how this gets verified without a person sitting in front of it.

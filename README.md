@@ -229,15 +229,10 @@ electron-builder, generates the notes and publishes the release with
 
 - `dofus-fight-alerts-X.Y.Z-setup.exe` — the installer (choosable install directory, no admin)
 - `dofus-fight-alerts-X.Y.Z-portable.exe` — runs without installing
-- `latest.yml` — the manifest electron-updater would need, if auto-update is ever wanted
-
-**The app does not update itself.** Nothing in it reads `latest.yml`; installing a new version means
-downloading the setup from the Releases page and running it over the old one (it keeps your
-`settings.json`, which lives in `%APPDATA%`). Check the version you have from the tray's
-**À propos**.
+- `latest.yml` — the manifest the installed app reads to find out a newer one exists
 
 The notes come from `tools/changelog.mjs`, which groups the commits since the previous tag by
-conventional-commit prefix (`feat:`, `fix:`, …) and puts anything unprefixed under *Autres*, so no
+conventional-commit prefix (`feat:`, `fix:`, …) and puts anything unprefixed under *Other*, so no
 commit is ever silently dropped. GitHub's own `--generate-notes` groups by pull request, which is
 useless here because the work lands as direct commits.
 
@@ -252,6 +247,24 @@ this so your friends are not surprised.
 Building locally (`npm run dist`) needs Windows **Developer Mode** enabled, or it fails extracting
 electron-builder's signing cache, which contains macOS symlinks. The CI runner is elevated and does
 not care.
+
+## Updating
+
+**The installed app updates itself.** At startup it asks GitHub whether a newer release exists,
+downloads it in the background, tells you by a toast when it is ready, and installs it the next time
+you quit — so an update never interrupts a fight. The repository is public, so no token is involved,
+and nothing is sent anywhere: it is one request for `latest.yml`.
+
+Two cases skip the check rather than fail at it, and both then need the new setup downloaded by hand:
+
+- **the portable exe**, which has no installation to update over;
+- **`npm start`**, which is not a packaged app and has no update manifest at all.
+
+Your `settings.json` lives in `%APPDATA%` and is untouched by an update. The version you are on is in
+the tray's **À propos**; what the updater did goes to the console, nowhere else.
+
+**The binaries are not signed**, so an update is as unsigned as the first install — Windows may warn
+again.
 
 ## Notes for whoever works on this next
 

@@ -18,8 +18,8 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "electron": "^44.0.0",
-    "typescript": "^5.9.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.9.0"
   },
   "author": "Rabzizz",
   "build": {
@@ -71,5 +71,8 @@
         "repo": "dofus-fight-alerts"
       }
     ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }
